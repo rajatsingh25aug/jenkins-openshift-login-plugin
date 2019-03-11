@@ -25,16 +25,13 @@
 package org.openshift.jenkins.plugins.openshiftlogin;
 
 import hudson.EnvVars;
-import hudson.model.User;
 import hudson.security.SecurityRealm;
-
+import hudson.security.HudsonFilter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
@@ -63,7 +60,7 @@ import jenkins.security.SecurityListener;
  * AuthorizationStrategy implementation.
  *
  */
-public class OpenShiftPermissionFilter implements Filter {
+public class OpenShiftPermissionFilter extends HudsonFilter {
 
     private static final String LAST_SELF_SAR_POLL_TIME = "self-sar-time";
     private static final long SELF_SAR_POLL_INTERVAL = 5 * 60 * 1000; // 5
@@ -83,7 +80,6 @@ public class OpenShiftPermissionFilter implements Filter {
     private static String NEED_TO_AUTH = "\nYou need to supply credentials that allow you to be authenticated by OpenShift OAuth as a valid user who is assigned either the view, edit, or admin roles in the OpenShift project running this Jenkins instance. \n"
             + "If operating from a browser, provide your user credentials when solicited by the OpenShift login page.  Otherwise, supply as a part of any HTTP requests you generate a HTTP Authorization Bearer header\n"
             + "containing a token that correlates to your user credentials.\n";
-
     // the Jenkins crazy use of constructors vs. introspection / field setting
     // means
     // that after initial bringup, but following subsequent Jenkins restarts, we
@@ -122,12 +118,14 @@ public class OpenShiftPermissionFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
+                System.out.println("In doFilter Method of openshiftPermissionFilter class");
         try {
             boolean updated = OpenShiftSetOAuth.setOauth(false);
             final HttpServletRequest httpRequest = (HttpServletRequest) request;
             long interval = SELF_SAR_POLL_INTERVAL;
             String var = EnvVars.masterEnvVars
                     .get(OPENSHIFT_PERMISSIONS_POLL_INTERVAL);
+                    System.out.println("In doFilter method only ((Var is))--->"+ var);
             if (var != null) {
                 try {
                     interval = Long.parseLong(var);
@@ -136,8 +134,10 @@ public class OpenShiftPermissionFilter implements Filter {
                 }
             }
             HttpSession s = httpRequest.getSession(false);
+            System.out.println("OpenshiftPermissionFilter httpSession s");
             if (s != null) {
-
+                System.out.println("s!=null!!");
+                System.out.println("HttpSession is---->"+ s);
                 OAuthSession oauth = (OAuthSession) s
                         .getAttribute(OAuthSession.SESSION_NAME);
                 if (oauth != null && oauth.getCredential() != null) {
@@ -170,6 +170,7 @@ public class OpenShiftPermissionFilter implements Filter {
                     }
                 }
             } else if (Jenkins.getInstance().getSecurityRealm() instanceof OpenShiftOAuth2SecurityRealm) {
+                System.out.println("in else if block Jenkins.getInstance()");
                 // support for non-browser, like curl, access to jenkins with
                 // openshift oauth security;
                 // by choice, not storing auth in http session (remember, no
@@ -180,11 +181,13 @@ public class OpenShiftPermissionFilter implements Filter {
                             .get(OPENSHIFT_ACCESS_VIA_BEARER_TOKEN);
                     if (enabled == null || !enabled.equalsIgnoreCase("false")) {
                         String authHdr = httpRequest.getHeader("Authorization");
+                        System.out.println("AuthHeader--->"+ authHdr);
                         if (authHdr != null && authHdr.length() > 0
                                 && authHdr.startsWith("Bearer")) {
                             String[] words = authHdr.split(" ");
                             if (words.length > 1) {
                                 String token = words[1];
+                                System.out.println("token is--->>"+ token);
 
                                 BearerCacheEntry entry = bearerCache.get(token);
                                 boolean firstTime = false;
@@ -212,6 +215,7 @@ public class OpenShiftPermissionFilter implements Filter {
                                     //REMINDER - updateAuthorizationStrategy will call SecurityContextHolder.getContext().setAuthentication
                                     UsernamePasswordAuthenticationToken jenkinsToken = secRealm
                                             .updateAuthorizationStrategy(credential);
+                                            System.out.println("Openshift PermissionFilter jenKinsToken" + jenkinsToken);
 
                                     // TODO can we assume that once a token is
                                     // invalid, it is always invalid? If so, we

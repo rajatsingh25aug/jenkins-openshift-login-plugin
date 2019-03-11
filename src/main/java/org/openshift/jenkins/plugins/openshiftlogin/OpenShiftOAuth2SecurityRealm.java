@@ -314,6 +314,7 @@ public class OpenShiftOAuth2SecurityRealm extends SecurityRealm {
         if (filter == null || !filter.initCalled) {
             try {
                 filter = new OpenShiftPermissionFilter();
+                System.out.println("Filter called at 317::>>>>>" + filter);
                 hudson.util.PluginServletFilter.addFilter(filter);
             } catch (ServletException e) {
                 LOGGER.log(Level.SEVERE, "createFilter", e);
@@ -372,6 +373,7 @@ public class OpenShiftOAuth2SecurityRealm extends SecurityRealm {
         final Credential credential = new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
                 .setAccessToken(getDefaultedClientSecret().getPlainText());
+                System.out.println("credential value is at 376 line>>>"+ credential);
         try {
             OpenShiftUserInfo user = getOpenShiftUserInfo(credential, transport);
             String[] userNameParts = user.getName().split(":");
@@ -727,6 +729,7 @@ public class OpenShiftOAuth2SecurityRealm extends SecurityRealm {
         final Credential credential = new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
                 .setAccessToken(getDefaultedClientSecret().getPlainText());
+                System.out.println("credential 732>>" + credential);
         HttpRequestFactory requestFactory = transport
                 .createRequestFactory(new HttpRequestInitializer() {
                     public void initialize(HttpRequest request)
@@ -862,6 +865,7 @@ public class OpenShiftOAuth2SecurityRealm extends SecurityRealm {
         final Credential credential = new Credential(
                 BearerToken.authorizationHeaderAccessMethod())
                 .setAccessToken(getDefaultedClientSecret().getPlainText());
+                System.out.println("credential 868>>" + credential);
         if (useProviderOAuthEndpoint(credential, transport)) {
             LOGGER.info("Using OAuth Provider specified endpoints for this login flow");
             tsu = new GenericUrl(provider.token_endpoint);
@@ -893,6 +897,7 @@ public class OpenShiftOAuth2SecurityRealm extends SecurityRealm {
                     final Credential credential = new Credential(
                             BearerToken.authorizationHeaderAccessMethod())
                             .setFromTokenResponse(response);
+                System.out.println("credential 900>>" + credential);
                     this.setCredential(credential);
                     secRealm.updateAuthorizationStrategy(credential);
 
@@ -952,6 +957,8 @@ public class OpenShiftOAuth2SecurityRealm extends SecurityRealm {
             SecurityContextHolder.getContext().setAuthentication(token);
 
             User u = User.get(token.getName());
+            System.out.println("USER NAME is---->");
+
             info.updateProfile(u);
             // this controls the user name that is displayed atop the Jenkins
             // browser window;

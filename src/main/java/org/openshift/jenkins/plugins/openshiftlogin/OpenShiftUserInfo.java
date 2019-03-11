@@ -59,6 +59,7 @@ public class OpenShiftUserInfo extends UserProperty {
     }
 
     public String getName() {
+        System.out.println("OpenshiftUser file and getName function");
         if (metadata == null)
             return null;
         return metadata.name;

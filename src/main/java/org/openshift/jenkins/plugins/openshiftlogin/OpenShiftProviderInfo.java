@@ -56,6 +56,7 @@ public class OpenShiftProviderInfo {
 
     @Override
     public String toString() {
+        System.out.println("OpenshiftProviderInfo class and toString Method");
         return "OpenShiftProviderInfo: issuer: " + issuer + " auth ep: "
                 + authorization_endpoint + " token ep: " + token_endpoint;
     }

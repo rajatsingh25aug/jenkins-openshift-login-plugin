@@ -49,6 +49,7 @@ public class OpenShiftUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
+        System.out.println("OpenShiftUserDetail file getUserName"+ this.name);
         return this.name;
     }
 
